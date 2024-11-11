@@ -78,7 +78,7 @@ const addEvent = async (ctx, body) => {
     });
     return {
       url: r.data.htmlLink,
-      summary: r.data.summary,
+      summary: r.data.summary.slice(0, 15).concat('...'),
     };
   } catch (error) {
     console.error('Error creating event', error);
@@ -95,13 +95,17 @@ const callGooglelogin = async (ctx) => {
 
   await ctx.reply('You must login to use this function', {
     reply_markup: {
-      inline_keyboard: [[{ text: 'Authenticate', url }]],
+      inline_keyboard: [{ text: 'Authenticate', url }],
     },
   });
 };
 
 const botInit = () => {
   bot.on('message', async (ctx) => {
+    if (ctx.message.text.startsWith('/')) {
+      return; // Ignore commands
+    }
+
     if (!!userTokens[ctx.from.id]) {
       const message = ctx.message.text;
 
@@ -119,6 +123,7 @@ const botInit = () => {
 
       const promises = [];
       const orther = [];
+
       for (const key in obj) {
         if (!key.startsWith('noneOf')) {
           const date = key.split('/');
@@ -148,31 +153,56 @@ const botInit = () => {
             },
           };
           promises.push(addEvent(ctx, event));
-        } else orther.push(obj[key]);
+        } else if (!!obj[key]) orther.push(obj[key]);
       }
 
-      const res = await Promise.all(promises);
-      const successTitle = `Event successfully created \n`;
+      const chat = await bot.telegram.sendMessage(ctx.from.id, 'Processing...');
+      const chatId = chat.message_id;
+
+      var completed = 0;
+      const total = promises.length;
+      const successTitle = total > 0 ? `Event successfully created \n` : '';
       let addedGroup = '',
         ortherGroups = '';
-      const divider = '------------------------------------\n';
+      const divider = total > 0 ? '------------------------------------\n' : '';
       const ortherTitle = `Orthers note \n \n`;
 
-      res.forEach((r) => {
-        addedGroup += `🐱 ${r.summary} - <a href="${r.url}">View</a> \n`;
-      });
-
       orther.forEach((r) => {
-        ortherGroups += `🐱 ${r} \n`;
+        ortherGroups += `🗒 ${r} \n`;
       });
 
-      bot.telegram.sendMessage(
-        ctx.from.id,
-        `${successTitle} <blockquote>${addedGroup}</blockquote> ${divider} ${ortherTitle} <blockquote>${ortherGroups}</blockquote>`,
-        {
-          parse_mode: 'HTML',
+      for (let i = 0; i < promises.length; i++) {
+        try {
+          const r = await promises[i];
+          completed++;
+          addedGroup += `✅ ${r.summary} <a href="${r.url}">View</a> \n`;
+          const percentage = Math.round((completed / total) * 100);
+          const progressBar =
+            '█'.repeat(percentage / 10) + '░'.repeat(10 - percentage / 10);
+
+          await bot.telegram.editMessageText(
+            ctx.from.id,
+            chatId,
+            null,
+            `Processing...\n[${progressBar}] ${percentage}%`
+          );
+        } catch (error) {
+          console.error('Error processing promise', error);
         }
-      );
+      }
+
+      if (!total && !orther.length) return;
+
+      if (completed === total)
+        bot.telegram.editMessageText(
+          ctx.from.id,
+          chatId,
+          null,
+          `${successTitle} <blockquote>${addedGroup}</blockquote> ${divider} ${ortherTitle} <blockquote>${ortherGroups}</blockquote>`,
+          {
+            parse_mode: 'HTML',
+          }
+        );
     } else {
       await callGooglelogin(ctx);
     }
@@ -213,13 +243,14 @@ const deleteAllEvents = async (ctx) => {
     return;
   }
 
+  ctx.reply('Deleting all events...');
+
   oauth2Client.setCredentials(tokens);
   const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
   try {
     const events = await calendar.events.list({
       calendarId: 'primary',
     });
-
     const deletePromises = events.data.items.map((event) =>
       calendar.events.delete({
         calendarId: 'primary',
@@ -235,6 +266,12 @@ const deleteAllEvents = async (ctx) => {
   }
 };
 
+const onStart = (ctx) => {
+  if (!!userTokens[ctx.from.id]) ctx.reply('Welcome to the Calendar Bot!');
+  else callGooglelogin(ctx);
+};
+
+bot.command('start', onStart);
 bot.command('deleteallevents', deleteAllEvents);
 
 app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
