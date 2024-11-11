@@ -17,5 +17,8 @@
 	},
 	"author": "leo",
 	"license": "ISC",
-	"description": ""
+	"description": "",
+	"engines": {
+		"node": ">=14.0.0"
+	}
 }

@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 // Google OAuth Setup
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://shortnote-e24845a632b3.herokuapp.com/oauth2callback';
 
 const oauth2Client = new google.auth.OAuth2(
   CLIENT_ID,
