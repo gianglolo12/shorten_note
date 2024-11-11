@@ -274,5 +274,9 @@ const onStart = (ctx) => {
 bot.command('start', onStart);
 bot.command('deleteallevents', deleteAllEvents);
 
+app.get('/', (req, res) => {
+  res.send('Telegram bot is running');
+});
+
 app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
 botInit();
