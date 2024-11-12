@@ -142,9 +142,8 @@ const botInit = () => {
             year = year + 1;
           }
 
-          const start = new Date(Date.UTC(year, month, day, 0, 0, 0));
-          const end = new Date(Date.UTC(year, month, day, 23, 59, 59));
-
+          const start = new Date(Date.UTC(year, month, day - 1, 17, 0, 0)); // 17h -> GG calendar -> 0h
+          const end = new Date(Date.UTC(year, month, day, 17, 0, 0));
           const event = {
             ...defaultEvent,
             summary: obj[key],
