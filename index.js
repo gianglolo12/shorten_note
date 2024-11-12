@@ -26,7 +26,7 @@ const oauth2Client = new google.auth.OAuth2(
 
 const userTokens = {};
 
-const defaultEvent = {
+let defaultEvent = {
   summary: 'Sample Event',
   location: '',
   description: 'This is a sample event.',
@@ -113,7 +113,12 @@ const botInit = () => {
     }
 
     if (!!userTokens[ctx.from.id]) {
-      const message = ctx.message.text;
+      let message = ctx.message.text;
+
+      if (message.startsWith('[hobbies]')) {
+        defaultEvent.recurrence = ['RRULE:FREQ=DAILY;COUNT=2'];
+        message = message.replace('[hobbies]', '');
+      }
 
       const obj = message.split('\n').reduce((acc, curr, index) => {
         const datePatternGlobal = /\b(\d{2}\/\d{2})\b/;
