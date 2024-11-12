@@ -14,7 +14,9 @@ const PORT = process.env.PORT || 3000;
 // Google OAuth Setup
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://shortnote-e24845a632b3.herokuapp.com/oauth2callback';
+const REDIRECT_URI =
+  process.env.GOOGLE_REDIRECT_URI ||
+  'https://shortnote-e24845a632b3.herokuapp.com/oauth2callback';
 
 const oauth2Client = new google.auth.OAuth2(
   CLIENT_ID,
@@ -74,7 +76,10 @@ const addEvent = async (ctx, body) => {
   try {
     const r = await calendar.events.insert({
       calendarId: 'primary',
-      resource: body,
+      resource: {
+        ...body,
+        visibility: 'private',
+      },
     });
     return {
       url: r.data.htmlLink,
@@ -125,21 +130,21 @@ const botInit = () => {
       const orther = [];
 
       for (const key in obj) {
-        if (!key.startsWith('noneOf')) {
-          const date = key.split('/');
-          let year = new Date().getFullYear();
-          const month = date[1] - 1;
-          const day = date[0];
+        if (!!key && !key.startsWith('noneOf')) {
+            const date = key.split('/');
+            let year = new Date().getFullYear();
+            const month = date[1] - 1;
+            const day = date[0];
 
-          const currentMonth = new Date().getMonth() + 1;
-          if (month > currentMonth) {
+            const currentMonth = new Date().getMonth() + 1;
+            if (month > currentMonth) {
             year = year + 1;
-          }
+            }
 
-          const start = new Date(year, month, day, 10, 0, 0);
-          const end = new Date(year, month, day, 11, 0, 0);
+            const start = new Date(year, month, day, 0, 0, 0);
+            const end = new Date(year, month, day, 23, 59, 59);
 
-          const event = {
+            const event = {
             ...defaultEvent,
             summary: obj[key],
             description: obj[key],
@@ -151,8 +156,8 @@ const botInit = () => {
               dateTime: end.toISOString(),
               timeZone: 'Asia/Ho_Chi_Minh',
             },
-          };
-          promises.push(addEvent(ctx, event));
+            };
+            promises.push(addEvent(ctx, event));
         } else if (!!obj[key]) orther.push(obj[key]);
       }
 
@@ -164,8 +169,8 @@ const botInit = () => {
       const successTitle = total > 0 ? `Event successfully created \n` : '';
       let addedGroup = '',
         ortherGroups = '';
-      const divider = total > 0 ? '------------------------------------\n' : '';
-      const ortherTitle = `Orthers note \n \n`;
+      const divider = total > 0 && !!orther.length ? '------------------------------------\n' : '';
+      const ortherTitle = !!orther.length ? `Orthers note \n \n` : '';
 
       orther.forEach((r) => {
         ortherGroups += `🗒 ${r} \n`;
