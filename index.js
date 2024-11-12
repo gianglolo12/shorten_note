@@ -153,7 +153,7 @@ const botInit = () => {
               timeZone: 'Asia/Ho_Chi_Minh',
             },
             end: {
-              dateTime: `${year}-${month + 1}-${day}`,
+              date: `${year}-${month + 1}-${day}`,
               timeZone: 'Asia/Ho_Chi_Minh',
             },
           };
