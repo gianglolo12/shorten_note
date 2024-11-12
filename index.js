@@ -138,24 +138,24 @@ const botInit = () => {
 
             const currentMonth = new Date().getMonth() + 1;
             if (month > currentMonth) {
-            year = year + 1;
+              year = year + 1;
             }
-
-            const start = new Date(year, month, day, 0, 0, 0);
-            const end = new Date(year, month, day, 23, 59, 59);
+            
+            const start = new Date(Date.UTC(year, month, day, 0, 0, 0));
+            const end = new Date(Date.UTC(year, month, day, 23, 59, 59));
 
             const event = {
-            ...defaultEvent,
-            summary: obj[key],
-            description: obj[key],
-            start: {
+              ...defaultEvent,
+              summary: obj[key],
+              description: obj[key],
+              start: {
               dateTime: start.toISOString(),
               timeZone: 'Asia/Ho_Chi_Minh',
-            },
-            end: {
+              },
+              end: {
               dateTime: end.toISOString(),
               timeZone: 'Asia/Ho_Chi_Minh',
-            },
+              },
             };
             promises.push(addEvent(ctx, event));
         } else if (!!obj[key]) orther.push(obj[key]);
