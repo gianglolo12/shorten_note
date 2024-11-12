@@ -131,33 +131,33 @@ const botInit = () => {
 
       for (const key in obj) {
         if (!!key && !key.startsWith('noneOf')) {
-            const date = key.split('/');
-            let year = new Date().getFullYear();
-            const month = date[1] - 1;
-            const day = date[0];
+          const date = key.split('/');
+          let year = new Date().getFullYear();
+          const month = date[1] - 1;
+          const day = date[0];
 
-            const currentMonth = new Date().getMonth() + 1;
-            if (month > currentMonth) {
-              year = year + 1;
-            }
-            
-            const start = new Date(Date.UTC(year, month, day, 0, 0, 0));
-            const end = new Date(Date.UTC(year, month, day, 23, 59, 59));
+          const currentMonth = new Date().getMonth() + 1;
+          if (month > currentMonth) {
+            year = year + 1;
+          }
 
-            const event = {
-              ...defaultEvent,
-              summary: obj[key],
-              description: obj[key],
-              start: {
-              dateTime: start.toISOString(),
+          const start = new Date(Date.UTC(year, month, day, 0, 0, 0));
+          const end = new Date(Date.UTC(year, month, day, 23, 59, 59));
+
+          const event = {
+            ...defaultEvent,
+            summary: obj[key],
+            description: obj[key],
+            start: {
+              date: `${year}-${month + 1}-${day}`,
               timeZone: 'Asia/Ho_Chi_Minh',
-              },
-              end: {
-              dateTime: end.toISOString(),
+            },
+            end: {
+              dateTime: `${year}-${month + 1}-${day}`,
               timeZone: 'Asia/Ho_Chi_Minh',
-              },
-            };
-            promises.push(addEvent(ctx, event));
+            },
+          };
+          promises.push(addEvent(ctx, event));
         } else if (!!obj[key]) orther.push(obj[key]);
       }
 
@@ -169,7 +169,10 @@ const botInit = () => {
       const successTitle = total > 0 ? `Event successfully created \n` : '';
       let addedGroup = '',
         ortherGroups = '';
-      const divider = total > 0 && !!orther.length ? '------------------------------------\n' : '';
+      const divider =
+        total > 0 && !!orther.length
+          ? '------------------------------------\n'
+          : '';
       const ortherTitle = !!orther.length ? `Orthers note \n \n` : '';
 
       orther.forEach((r) => {
