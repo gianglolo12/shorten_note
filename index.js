@@ -38,6 +38,7 @@ const defaultEvent = {
     dateTime: '2024-11-11T11:00:00+07:00',
     timeZone: 'Asia/Ho_Chi_Minh',
   },
+  enventType: 'focusTime',
 };
 
 // Load existing tokens from db.json if it exists
@@ -149,11 +150,11 @@ const botInit = () => {
             summary: obj[key],
             description: obj[key],
             start: {
-              date: `${year}-${month + 1}-${day}`,
+              dateTime: new Date(start).toISOString().split('.')[0] + 'Z',
               timeZone: 'Asia/Ho_Chi_Minh',
             },
             end: {
-              date: `${year}-${month + 1}-${day}`,
+              dateTime: new Date(end).toISOString().split('.')[0] + 'Z',
               timeZone: 'Asia/Ho_Chi_Minh',
             },
           };
